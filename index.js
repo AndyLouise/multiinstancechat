@@ -4,18 +4,14 @@ require("dotenv").config({ path: require("find-config")(".env") });
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
-const ffmpeg = require("fluent-ffmpeg");
 const express = require("express");
 const nocache = require("nocache");
 const { v4: uuidv4 } = require("uuid");
 const app = express();
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
-const encoder = require("./modules/encode.js");
 const axios = require('axios');
 const { json } = require("express");
-const { encode } = require('querystring'); 
 
 // Config
 const outPath = path.join(__dirname, "TMP");
@@ -53,7 +49,6 @@ console.log(`| KEEP ARTIFACTS: ${config.keepArtifacts}`);
 console.log("--------------------------------");
 
 // Init
-ffmpeg.setFfmpegPath(ffmpegPath);
 app.use(cors());
 app.use(nocache());
 app.use(express.json());
@@ -166,20 +161,13 @@ async function sendOccupantsCount(numberOfOccupants) {
 // Routing
 
 app.get("/", async (req, res) => {
-  const alive = req.query.alive || 0;
-  const auth = req.query.auth || null;
-  const authKey = process.env['AUTH_KEY'];
-  
-  if (auth !== authKey) {
-    res.sendStatus(403);
-    return;
-  }
+  res.end("Welcome to Multi-Instance Chat: use /help for more details");
+  return;
+});
 
-  if (alive == 1) {
-    console.log("Status: Alive");
-    res.end("Status: Alive");
-    return;
-  }
+app.get("/help", async (req, res) => {
+  res.end("/getChat -> Returns Specific Chat log ex.: <url>/getChat");
+  return;
 });
 
 app.get("/getChat", async (req, res) => {
