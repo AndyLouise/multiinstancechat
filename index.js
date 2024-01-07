@@ -1,45 +1,23 @@
 // Includes
 "use strict";
 require("dotenv").config({ path: require("find-config")(".env") });
-const fs = require("fs");
-const path = require("path");
 const cors = require("cors");
 const express = require("express");
 const nocache = require("nocache");
-const { v4: uuidv4 } = require("uuid");
 const app = express();
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 const axios = require('axios');
-const { json } = require("express");
 
 // Config
-const outPath = path.join(__dirname, "TMP");
 
 let config = {
   dataFormat: process.env.DATA_FORMAT || "json",
   keepArtifacts:
     process.env.KEEP_ARTIFACTS?.toLowerCase().trim() === "true" ? true : false,
-  port: process.env.PORT || 8888,
-  encodingMethod: process.env.ENCODING_TYPE || "BINARY",
-  b64: process.env.B64 === "false" ? false : true || true,
-  size:
-    process.env.WIDTH || process.env.HEIGHT
-      ? {
-        width: process.env.WIDTH || 128,
-        height: process.env.HEIGHT || 128,
-      }
-      : "auto",
-  outPath,
+  port: process.env.PORT || 8888
 };
-if (!config.keepArtifacts) fs.rmSync(outPath, { recursive: true, force: true });
-if (!fs.existsSync(outPath)) {
-  fs.mkdir(outPath, (err) => {
-    if (err) console.error(err);
-  });
-}
+
 console.log("--------------------------------");
-console.log(`| Hello PixelProxy!`);
+console.log(`| Multi-Instance Chat!`);
 console.log("--------------------------------");
 console.log(`| PORT: ${config.port}`);
 console.log(`| FORMAT: ${config.dataFormat}`);
@@ -80,25 +58,41 @@ function removeHtmlTags(htmlString) {
 }
 
 function replaceSlursWithAsterisks(inputText, slurs) {
-  slurs.forEach((slur) => {
-    const asterisks = '*'.repeat(slur.length);
-    // Modify the regular expression to match slurs with any number of spaces between characters
-    const slurPattern = slur.split('').map(char => `\\s*${char}`).join('');
-    inputText = inputText.replace(new RegExp(slurPattern, 'gi'), asterisks);
-  });
-
-  return inputText;
+  try{
+    slurs.forEach((slur) => {
+      const asterisks = '*'.repeat(slur.length);
+      // Modify the regular expression to match slurs with any number of spaces between characters
+      const slurPattern = slur.split('').map(char => `\\s*${char}`).join('');
+      inputText = inputText.replace(new RegExp(slurPattern, 'gi'), asterisks);
+    });
+  
+    return inputText;
+  }
+  catch (error)
+  {
+    console.log("Failed to filter slur: "+ inputText + " .");
+    return inputText;
+  }
+  
 }
 
 function IsUserBanned(bannedUsers, username) {
   var userIsBanned = false;
-  bannedUsers.forEach((user_banned) => {
-    if (user_banned.toLowerCase() == username.toLowerCase())
-    {
-      userIsBanned = true;
-    }
-  });
-  return userIsBanned;
+  try {
+    bannedUsers.forEach((user_banned) => {
+      if (user_banned.toLowerCase() == username.toLowerCase())
+      {
+        userIsBanned = true;
+      }
+    });
+    return userIsBanned;
+  } 
+  catch (error)
+  {
+    console.log("Unable to check if user " + username +" is banned");
+    return false;
+  }
+  
 }
 
 function getUserPerk(userString) {
@@ -183,10 +177,16 @@ app.get("/getChat", async (req, res) => {
     return;
   }
   
-  var fileId = ReadFile("", fileIDName)
-  var messages = ReadFile(fileId, fileName);
-
-  res.end(messages);
+  try {
+    var fileId = ReadFile("", fileIDName)
+    var messages = ReadFile(fileId, fileName);
+    res.end(messages);
+  }
+  catch(error)
+  {
+    console.log("Failed to get chat: " +  error.message);
+    res.end("Failed to get chat: " +  error.message);
+  }
 });
 
 app.get("/LogChatAndCreateFile", async (req, res) => {
@@ -220,12 +220,12 @@ app.get("/LogChatAndCreateFile", async (req, res) => {
     newFileId = newFileId.toString();
     WriteFile(newFileId, "", false, fileNumberName);
     // success
+    res.end(messages);
     //res.end("Created new Chat log");
   } catch (error) {
     console.log("Failed to log chat: " + error);
-  }
-  
-  res.end(messages);
+    res.end("Failed to log chat: " + error);
+  }  
 });
 
 app.get("/AddBlacklistWord", async (req, res) => {
@@ -257,8 +257,6 @@ app.get("/AddBlacklistWord", async (req, res) => {
     console.log("failed to add blacklist word: " + error);
     res.end("failed to add blacklist word: " + error);
   }
-  
-
 });
 
 
@@ -273,9 +271,17 @@ app.get("/getUsers", async (req, res) => {
     return;
   }
 
-  // get current player number
-  var playerNum = ReadFile("", fileId);
-  res.end(playerNum);
+  try{
+    // get current player count
+    var playerNum = ReadFile("", fileId);
+    res.end(playerNum);
+  }
+  catch(error)
+  {
+    console.log("failed to get player count: " +  error.message);
+    res.end("0");
+  }
+  
 
 });
 
@@ -285,57 +291,79 @@ app.get("/setUsers", async (req, res) => {
   const fileId = "Users";
   const authKey = process.env['AUTH_KEY'];
   const action = req.query.action || null;
-  var players = req.query.p || null;
+  var players = req.query.p || "0";
   
   if (auth !== authKey) {
     res.sendStatus(403);
     return;
   }
 
-  if (action == null || players == null) {
-    res.end("Bad Request");
+  if (action == null) {
+    res.end("No player count action was defined");
     return;
   }
 
-  // get current player number
-  var playerNum = ReadFile("", fileId);
-
+  // just return 0 if no players
   if (players == "0") {
     res.end(playerNum);
     return;
   }
+
+  try{
+    // get current player number
+    var playerNumStr = ReadFile("", fileId);
   
-  // convert to int
-  playerNum = parseInt(playerNum);
-  players = parseInt(players);
-  
-  // update player number
-  switch (action) {
-    case "add":
-      playerNum = playerNum + players;
-      // send player for deletion in 5m (they will be re-added in case still in instace)
-      sendOccupantsCount(players);
-      break;
+    // convert to int
+    var playerNum = parseInt(playerNumStr);
+    players = parseInt(players);
     
-    case "remove":
-      playerNum = playerNum - players;
-      break;
+    // update player number
+    switch (action) {
+      case "add":
+        playerNum = playerNum + players;
+        // send player for deletion in 5m (they will be re-added in case still in instance)
+        sendOccupantsCount(players);
+        break;
+      
+      case "remove":
+        playerNum = playerNum - players;
+        break;
+      
+      default:
+        break;
+    }
     
-    default:
-      break;
+    // if accidently negative, correct to 0
+    if (playerNum < 0) {
+      playerNum = 0;
+    }
+    // convert string
+    playerNumStr = playerNum.toString();
+    // only save if not NaN
+    if (!isNaN(playerNumStr) && playerNumStr != "NaN")
+    {
+      WriteFile(playerNumStr, "", false, fileId);
+    }
+    else{
+      // if is indeed NaN, not save and only return original player count
+      playerNumStr = ReadFile("", fileId);
+    }
+    res.end(playerNumStr);
   }
-  
-  // if accidently negative, correct to 0
-  if (playerNum < 0) {
-    playerNum = 0;
+  catch(error)
+  {
+    console.log("Failed to set user count: " + error.message);
+    // try to get actual user count from file
+    try{
+      res.end(ReadFile("", fileId));
+    }
+    catch(error)
+    {
+      // if that also fails, return 0
+      console.log("failed to return player count: " + error.message);
+      res.end("0");
+    }
   }
-  
-  playerNum = playerNum.toString();
-  // save
-  WriteFile(playerNum, "", false, fileId);
-  
-  // return new number
-  res.end(playerNum);
 });
 
 app.get("/chat", async (req, res) => {
@@ -363,9 +391,6 @@ app.get("/chat", async (req, res) => {
     return;
   }
 
-  
-  
-
   // message null
   if (msg == null || msg == "") {
     res.end("Your message can't be null, please type something after 'msg=' ");
@@ -388,98 +413,119 @@ app.get("/chat", async (req, res) => {
     return;
   }
 
-  // filter
-  var slursFile = ReadFile("", 'Slurs');
-  var slurLines = slursFile.split('\n').filter(line => line.trim() !== '');
-  // populate array
-  slurs.push(...slurLines.map(slur => slur.replace(/\s+/g, ''))); // Remove spaces from slurs
-  // update message
-  msg = replaceSlursWithAsterisks(msg, slurs);
   
+  try {
+    // filter
+    var slursFile = ReadFile("", 'Slurs');
+    var slurLines = slursFile.split('\n').filter(line => line.trim() !== '');
+    // populate array
+    slurs.push(...slurLines.map(slur => slur.replace(/\s+/g, ''))); // Remove spaces from slurs
+    // update message
+    msg = replaceSlursWithAsterisks(msg, slurs);
+  } 
+  catch (error)
+  {
+    console.log("Unable to replace slur in message: " + error.message)
+  }
+
   // validation of name
   if (urlPass == pass) {
     name =  "<color=yellow>(World Creator)" + name + "</color>";
-     // world creators can ban
+    // world creators can ban
     userCanBan = true;
   }
   else if (name.toLowerCase().includes("andylouise") && (worldName == "All" || worldName == "SlenderManVR") ) {
     name =  "<color=red>(System) You don't have enough privilege for that</color>";
     msg = "403 Forbidden";
   }
-  
-  // bans
-  var bannedUsersFile = ReadFile("", fileNameBannedUsers);
-  var bannedUsers = bannedUsersFile.split('\n').filter(line => line.trim() !== '');
-  if (IsUserBanned(bannedUsers, name)) {
-    // <color=red>(System) User is Banned</color>
-    name =  "";
-    msg = "";
-    res.end("30/09/23 00:55 <color=red>(System) You, Or Someone In Your Instance, Have Been Banned From Chat</color>");
-    return;
-  }
-  
-  // perks
-  var perksFile = ReadFile("", 'Perks');
-  var perksLines = perksFile.split('\n').filter(line => line.trim() !== '');
-  perksLines.forEach((user_perks) => {
-    const [UsernamePerk, perk] = getUserPerk(user_perks);
-    if (name.toLowerCase() == UsernamePerk.toLowerCase())
-    {
-      // user has perk
-      name =  "<color=green>("+ perk +")" + name + "</color>";
-      // if perk is moderator, user can ban
-      if(perk == "Moderator"){
-        userCanBan = true;
-      }
+
+  try
+  {
+    // bans
+    var bannedUsersFile = ReadFile("", fileNameBannedUsers);
+    var bannedUsers = bannedUsersFile.split('\n').filter(line => line.trim() !== '');
+    if (IsUserBanned(bannedUsers, name)) {
+      // <color=red>(System) User is Banned</color>
+      name =  "";
+      msg = "";
+      res.end("<color=red>(System) This User Has Been Banned From Chat</color>");
+      return;
     }
-  });
-
-  // commands
-  if (userCanBan && msg.charAt(0) == "/") {
-    // ban users
-    if (msg.includes('/ban')) {
-      // Remove "/ban" and any spaces from the message
-      const bannedUserName = msg.replace(/\/ban\s+/g, '');
-      const userBannedString = bannedUserName.toLowerCase() + "\n";
-
-      try{
-        // Add the banned string to the list
-        WriteFile(userBannedString, "", true, fileNameBannedUsers);
-        console.log("banned user: " + bannedUserName);
-        msg = "<color=red>(System) User " + bannedUserName + " Was Banned By "+ name +"</color>";
-        name = "";
-      } 
-      catch (error)
+  }
+  catch (error)
+  {
+    console.log("Unable to ban selected user: " + error.message)
+  }
+    
+  try{
+    // perks
+    var perksFile = ReadFile("", 'Perks');
+    var perksLines = perksFile.split('\n').filter(line => line.trim() !== '');
+    perksLines.forEach((user_perks) => {
+      const [UsernamePerk, perk] = getUserPerk(user_perks);
+      if (name.toLowerCase() == UsernamePerk.toLowerCase())
       {
-        console.log("failed to ban User: " + bannedUserName);
+        // user has perk
+        name =  "<color=green>("+ perk +")" + name + "</color>";
+        // if perk is moderator, user can ban
+        if(perk == "Moderator"){
+          userCanBan = true;
+        }
       }
-    }
-    
-    // clear messages
-    /*
-    if (msg.includes('/clear')) {
-      const numLinesToRemove = msg.replace(/\/clear\s+/g, '');
-      var tempFileId = ReadFile("", fileIDName)
-      messages = ReadFile(tempFileId, fileName);
-      if (messages != null){
-        // if messages exist, try to clear lines 
-        messages = ClearLines(messages, numLinesToRemove);
-        WriteFile(messages, tempFileId, false, fileName);
-        console.log("Removed " + numLinesToRemove + " lines");
-        msg = "<color=blue>(System) " + numLinesToRemove + " Messages Cleared by "+ name +"</color>";
-        name = "";
-      }
-    }
-    */
-    
-  }
-  // revoke ban permission now
-  userCanBan = false;
-  
-  // set up time and formatation
-  name = getCurrentTime() + " " + name + ": "; 
+    });
 
+    // commands
+    if (userCanBan && msg.charAt(0) == "/") {
+      // ban users
+      if (msg.includes('/ban')) {
+        // Remove "/ban" and any spaces from the message
+        const bannedUserName = msg.replace(/\/ban\s+/g, '');
+        const userBannedString = bannedUserName.toLowerCase() + "\n";
+
+        try{
+          // Add the banned string to the list
+          WriteFile(userBannedString, "", true, fileNameBannedUsers);
+          console.log("banned user: " + bannedUserName);
+          msg = "<color=red>(System) User " + bannedUserName + " Was Banned By "+ name +"</color>";
+          name = "";
+        } 
+        catch (error)
+        {
+          console.log("failed to ban User: " + bannedUserName);
+        }
+      }
+      
+      // clear messages
+      /*
+      if (msg.includes('/clear')) {
+        const numLinesToRemove = msg.replace(/\/clear\s+/g, '');
+        var tempFileId = ReadFile("", fileIDName)
+        messages = ReadFile(tempFileId, fileName);
+        if (messages != null){
+          // if messages exist, try to clear lines 
+          messages = ClearLines(messages, numLinesToRemove);
+          WriteFile(messages, tempFileId, false, fileName);
+          console.log("Removed " + numLinesToRemove + " lines");
+          msg = "<color=blue>(System) " + numLinesToRemove + " Messages Cleared by "+ name +"</color>";
+          name = "";
+        }
+      }
+      */
+      
+    }
+    // revoke ban permission now
+    userCanBan = false;
+  }
+  catch(error)
+  {
+    console.log("Failed to apply perk or command: " + error.message);
+  }
+    
+    
   try {
+    // set up time and formatation
+    name = getCurrentTime() + " " + name + ": "; 
+
     // check if file id exists
     var fileId = ReadFile("", fileIDName)
     // create file with id of one if not exist
