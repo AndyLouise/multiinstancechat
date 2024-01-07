@@ -1,7 +1,7 @@
 # Multi Instance Chat
 ## An multi-instance chat made to enable a chatbox between worlds on vrchat
 
-## API Url
+## API Endpoint
 - https://multiinstancechat-production.up.railway.app
 
 ## Welcome Message

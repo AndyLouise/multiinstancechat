@@ -1,12 +1,12 @@
 {
-  "name": "pixel-proxy",
+  "name": "multi-instance-chat",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ån",
+  "author": "AndyLouise",
   "license": "MIT",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",

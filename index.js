@@ -21,8 +21,6 @@ console.log(`| Multi-Instance Chat!`);
 console.log("--------------------------------");
 console.log(`| PORT: ${config.port}`);
 console.log(`| FORMAT: ${config.dataFormat}`);
-console.log(`| METHOD: ${config.encodingMethod}`);
-console.log(`| SIZE: ${JSON.stringify(config.size)}`);
 console.log(`| KEEP ARTIFACTS: ${config.keepArtifacts}`);
 console.log("--------------------------------");
 
@@ -155,12 +153,16 @@ async function sendOccupantsCount(numberOfOccupants) {
 // Routing
 
 app.get("/", async (req, res) => {
-  res.end("Welcome to Multi-Instance Chat: use /help for more details");
+  res.end("Welcome to Multi-Instance Chat: access https://multiinstancechat-production.up.railway.app/help for more details");
   return;
 });
 
 app.get("/help", async (req, res) => {
-  res.end("/getChat -> Returns Specific Chat log ex.: <url>/getChat");
+  res.end(`Multi-Instance Chat was developed by AndyLouise to enable users in VRChat
+  to chat between different instances and worlds.\n
+  GitHub Project: https://github.com/AndyLouise/multiinstancechat\n
+  API Documentation: https://github.com/AndyLouise/multiinstancechat/blob/main/README.md\n
+  For any issues please contact me on Twitter: @andyplouise`);
   return;
 });
 
@@ -259,11 +261,33 @@ app.get("/AddBlacklistWord", async (req, res) => {
   }
 });
 
+app.get("/getBlackList", async (req, res) => {
+  const { ReadFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const authKey = process.env['AUTH_KEY'];
+  const fileName = "Slurs";
+  
+  if (auth !== authKey) {
+    res.sendStatus(403);
+    return;
+  }
+
+  try{
+    // get current player count
+    var blacklist = ReadFile("", fileName);
+    res.end(blacklist);
+  }
+  catch(error)
+  {
+    console.log("failed to get blacklist: " +  error.message);
+    res.end("Failed to Get BlackList");
+  }
+});
 
 app.get("/getUsers", async (req, res) => {
   const { ReadFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
-  const fileId = "Users";
+  const fileName = "Users";
   const authKey = process.env['AUTH_KEY'];
   
   if (auth !== authKey) {
@@ -273,7 +297,7 @@ app.get("/getUsers", async (req, res) => {
 
   try{
     // get current player count
-    var playerNum = ReadFile("", fileId);
+    var playerNum = ReadFile("", fileName);
     res.end(playerNum);
   }
   catch(error)
@@ -281,8 +305,6 @@ app.get("/getUsers", async (req, res) => {
     console.log("failed to get player count: " +  error.message);
     res.end("0");
   }
-  
-
 });
 
 app.get("/setUsers", async (req, res) => {
