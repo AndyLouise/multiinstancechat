@@ -24,7 +24,7 @@ function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="D
 
 function DeleteLineFromFile(filePath, searchString, folder='Data') {
   // Read the file
-  fs.readFile(`${folder}/${filePath}.txt`, 'utf8', (err, data) => {
+  fs.readFileSync(`${folder}/${filePath}.txt`, 'utf8', (err, data) => {
       if (err) {
           console.log('Error reading file:', err);
           return;
@@ -61,7 +61,7 @@ function DeleteLineFromFile(filePath, searchString, folder='Data') {
 function ReadFile(id, fileName='promptHistory', folder='Data')  {
   let data;
   try {
-    data = fs.readFile(`${folder}/${fileName}${id}.txt`, 'utf-8');
+    data = fs.readFileSync(`${folder}/${fileName}${id}.txt`, 'utf-8');
   } catch (error) {
     data = null;
   }
