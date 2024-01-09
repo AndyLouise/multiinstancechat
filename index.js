@@ -170,7 +170,7 @@ app.get("/Data", async (req, res) => {
   const fs = require('fs');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = "/Data";
+  const directoryPath = "Data/";
 
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
