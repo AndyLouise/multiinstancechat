@@ -205,10 +205,10 @@ app.get("/Data/:filename", (req, res) => {
       res.status(403).send("Access Forbidden: Invalid authentication key");
       return;
   }
-  
+  var filePath = directoryPath + filename;
   // Check if the requested path is a file
   try {
-    const stats = fs.statSync(directoryPath + filename);
+    const stats = fs.statSync(filePath);
 
     if (stats.isFile()) {
         // If it's a file, send the file as a response
