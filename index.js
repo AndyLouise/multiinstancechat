@@ -175,7 +175,7 @@ app.get("/getChat", async (req, res) => {
   const authKey = process.env['AUTH_KEY'];
   
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
   
@@ -195,13 +195,13 @@ app.get("/LogChatAndCreateFile", async (req, res) => {
   const { WriteFile, ReadFile, CreateFile, DeleteFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const fileNumberName = req.query.file || "FileID_All";
-  const authKey = process.env['AUTH_KEY'];
+  const authKey = process.env['DEV_API_KEY'];
   const worldName = getTextAfterLastUnderscore(fileNumberName);
   const fileName = "promptHistory_" + worldName;
 
-  // auth
+  // auth (DEV)
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }  
   
@@ -233,16 +233,18 @@ app.get("/LogChatAndCreateFile", async (req, res) => {
 app.get("/AddBlacklistWord", async (req, res) => {
   const { WriteFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
-  const authKey = process.env['AUTH_KEY'];
+  const authKey = process.env['DEV_API_KEY'];
   const fileName = "Slurs";
   const word = req.query.word || null;
   
+  // DEV KEY
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
 
   if(word == null){
+    console.log("world not set");
     res.end("Word not set");
     return;
   }
@@ -256,19 +258,52 @@ app.get("/AddBlacklistWord", async (req, res) => {
   } 
   catch (error)
   {
-    console.log("failed to add blacklist word: " + error);
+    console.log("Failed to add blacklist word: " + error);
     res.end("failed to add blacklist word: " + error);
   }
 });
 
-app.get("/getBlackList", async (req, res) => {
+app.get("/DeleteWordBlacklist", async (req, res) => {
+  const { DeleteLineFromFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const authKey = process.env['DEV_API_KEY'];
+  const word = req.query.word || null;
+  const file = "Data/Slurs.txt";
+
+  // DEV KEY
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  if(word == null){
+    console.log("world not set");
+    res.end("Word not set");
+    return;
+  }
+
+  try{
+    // delete line
+    DeleteLineFromFile(file, word);
+    console.log(word + " removed from blacklist");
+    res.end(word + " removed from blacklist");
+  }
+  catch(error)
+  {
+    console.log("Failed to remove blacklist word: " + error);
+    res.end("failed to remove blacklist word: " + error);
+  }
+});
+
+app.get("/GetBlackList", async (req, res) => {
   const { ReadFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
-  const authKey = process.env['AUTH_KEY'];
+  const authKey = process.env['DEV_API_KEY'];
   const fileName = "Slurs";
-  
+
+  // DEV KEY
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
 
@@ -279,8 +314,60 @@ app.get("/getBlackList", async (req, res) => {
   }
   catch(error)
   {
-    console.log("failed to get blacklist: " +  error.message);
+    console.log("Failed to get blacklist: " +  error.message);
     res.end("Failed to Get BlackList");
+  }
+});
+
+app.get("/GetModerators", async (req, res) => {
+  const { ReadFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const worldName = req.query.w || "All";
+  const fileName = "Perks_";
+  const authKey = process.env['DEV_API_KEY'];
+  
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  try{
+    // get current world perk file
+    var perksFile = ReadFile("", fileName + worldName);
+    res.end(perksFile);
+  }
+  catch(error)
+  {
+    console.log("Failed to get perk file: " +  error.message);
+    res.end("Failed to get perk file: " +  error.message);
+  }
+});
+
+app.get("/AddModerator", async (req, res) => {
+  const { ReadFile, WriteFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const worldName = req.query.w || "All";
+  const username = req.query.username;
+  const perk = req.query.perk;
+  const authKey = process.env['DEV_API_KEY'];
+  
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  try{
+    // input new user with perk
+    WriteFile(username + ":" + perk, "", true, 'Perks_' + worldName);
+    // success
+    var perkAddSuccess =  "Sucessfully added user " +  username + " with perk " + perk;
+    res.end(perkAddSuccess);
+  }
+  catch(error)
+  {
+    var perkAddFail =  "Failed to add user " +  username + " with perk " + perk + ": " + error.message;
+    console.log(perkAddFail);
+    res.end(perkAddFail);
   }
 });
 
@@ -291,7 +378,7 @@ app.get("/getUsers", async (req, res) => {
   const authKey = process.env['AUTH_KEY'];
   
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
 
@@ -316,7 +403,7 @@ app.get("/setUsers", async (req, res) => {
   var players = req.query.p || "0";
   
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
 
@@ -409,7 +496,7 @@ app.get("/chat", async (req, res) => {
 
   // authentication
   if (auth !== authKey) {
-    res.sendStatus(403);
+    res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
 
@@ -480,21 +567,30 @@ app.get("/chat", async (req, res) => {
   }
     
   try{
-    // perks
-    var perksFile = ReadFile("", 'Perks');
-    var perksLines = perksFile.split('\n').filter(line => line.trim() !== '');
-    perksLines.forEach((user_perks) => {
-      const [UsernamePerk, perk] = getUserPerk(user_perks);
-      if (name.toLowerCase() == UsernamePerk.toLowerCase())
-      {
-        // user has perk
-        name =  "<color=green>("+ perk +")" + name + "</color>";
-        // if perk is moderator, user can ban
-        if(perk == "Moderator"){
-          userCanBan = true;
+    // check if perk file exists
+    var perksFile = ReadFile("", 'Perks_' + worldName);
+    // create perk file with worldName if not exist
+    if (perksFile == null) {
+      WriteFile("", "", false, 'Perks_' + worldName);
+    }
+    // only try to get perk if the file is not empty
+    else
+    {
+      // get each line with perk and username
+      var perksLines = perksFile.split('\n').filter(line => line.trim() !== '');
+      perksLines.forEach((user_perks) => {
+        const [UsernamePerk, perk] = getUserPerk(user_perks);
+        if (name.toLowerCase() == UsernamePerk.toLowerCase())
+        {
+          // user has perk
+          name =  "<color=green>("+ perk +")" + name + "</color>";
+          // if perk is moderator, user can ban
+          if(perk == "Moderator"){
+            userCanBan = true;
+          }
         }
-      }
-    });
+      });
+    }
 
     // commands
     if (userCanBan && msg.charAt(0) == "/") {
@@ -586,5 +682,5 @@ app.get("/chat", async (req, res) => {
 
 app.get("/favicon.ico", (req, res) => res.status(204));
 app.get("*", (req, res) => {
-  res.sendStatus(403);
+  res.status(403).send("Access Forbidden: Invalid authentication key");
 });

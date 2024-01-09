@@ -23,6 +23,42 @@ function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="D
   }
 }
 
+function DeleteLineFromFile(filePath, searchString) {
+  // Read the file
+  fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+          console.log('Error reading file:', err);
+          return;
+      }
+
+      // Split the content into an array of lines
+      const lines = data.split('\n');
+
+      // Find the index of the line containing the specified string
+      const index = lines.findIndex(line => line.includes(searchString));
+
+      if (index !== -1) {
+          // Remove the line from the array
+          lines.splice(index, 1);
+
+          // Join the lines back into a string
+          const updatedContent = lines.join('\n');
+
+          // Write the updated content back to the file
+          fs.writeFile(filePath, updatedContent, 'utf8', (writeErr) => {
+              if (writeErr) {
+                  console.error('Error writing to file:', writeErr);
+              } else {
+                  console.log('Line deleted successfully.');
+              }
+          });
+      } else {
+          console.log('String not found in the file.');
+      }
+  });
+}
+
+
 function ReadFile(id, fileName="promptHistory", folder="Data")  {
   let data;
   try {
@@ -43,6 +79,7 @@ module.exports = {
     console.log('File deleted successfully or already deleted');
   },
   ReadFile,
+  DeleteLineFromFile,
   CreateFile: (id, fileName="promptHistory", folder="Data", initialText="") => {
     console.log("Creating new file: " + fileName + id);
     //let mainPrompt = ReadFile("-1") + "\n";
