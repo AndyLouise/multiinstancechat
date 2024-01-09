@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="Data"){
-
+  // make sure to delete any spaces in the file name
+  fileName = fileName.replace(/\s/g, '');
+  id = id.replace(/\s/g, '');
   if(append) {
     // Write the string to a file
     fs.appendFile(`${folder}/${fileName}${id}.txt`, prompt, function(err) {
@@ -23,9 +25,11 @@ function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="D
   }
 }
 
-function DeleteLineFromFile(filePath, searchString) {
+function DeleteLineFromFile(filePath, searchString, folder='Data') {
+  // make sure to delete any spaces in the file name
+  filePath = filePath.replace(/\s/g, '');
   // Read the file
-  fs.readFile(filePath, 'utf8', (err, data) => {
+  fs.readFile(`${folder}/${filePath}.txt`, 'utf8', (err, data) => {
       if (err) {
           console.log('Error reading file:', err);
           return;
@@ -48,21 +52,24 @@ function DeleteLineFromFile(filePath, searchString) {
           fs.writeFile(filePath, updatedContent, 'utf8', (writeErr) => {
               if (writeErr) {
                   console.error('Error writing to file:', writeErr);
-              } else {
-                  console.log('Line deleted successfully.');
+                  throw new Error(writeErr);
               }
           });
       } else {
           console.log('String not found in the file.');
+          throw new Error('String not found in the file.');
       }
   });
 }
 
 
-function ReadFile(id, fileName="promptHistory", folder="Data")  {
+function ReadFile(id, fileName='promptHistory', folder='Data')  {
+  // make sure to delete any spaces in the file name
+  fileName = fileName.replace(/\s/g, '');
+  id = id.replace(/\s/g, '');
   let data;
   try {
-    data = fs.readFileSync(`${folder}/${fileName}${id}.txt`, 'utf-8');
+    data = fs.readFile(`${folder}/${fileName}${id}.txt`, 'utf-8');
   } catch (error) {
     data = null;
   }
@@ -70,7 +77,7 @@ function ReadFile(id, fileName="promptHistory", folder="Data")  {
 }
 
 module.exports = { 
-  DeleteFile: (id, fileName="promptHistory", folder="Data") => {
+  DeleteFile: (id, fileName='promptHistory', folder='Data') => {
     fs.unlink(`${folder}/${fileName}${id}.txt`, (err) => {
       if (err) {
         return;
@@ -80,9 +87,8 @@ module.exports = {
   },
   ReadFile,
   DeleteLineFromFile,
-  CreateFile: (id, fileName="promptHistory", folder="Data", initialText="") => {
-    console.log("Creating new file: " + fileName + id);
-    //let mainPrompt = ReadFile("-1") + "\n";
+  CreateFile: (id, fileName='promptHistory', folder='Data', initialText='') => {
+    console.log('Creating new file: ' + fileName + id);
     WriteFile(initialText, id, false, fileName, folder);
   },
   WriteFile

@@ -268,7 +268,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
   const word = req.query.word || null;
-  const file = "Data/Slurs.txt";
+  const file = "Slurs";
 
   // DEV KEY
   if (auth !== authKey) {
@@ -344,10 +344,11 @@ app.get("/GetModerators", async (req, res) => {
 });
 
 app.get("/AddModerator", async (req, res) => {
-  const { ReadFile, WriteFile } = require('./saveLoaderText.js');
+  const { WriteFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const worldName = req.query.w || "All";
   const username = req.query.username;
+  const fileName = "Perks_";
   const perk = req.query.perk;
   const authKey = process.env['DEV_API_KEY'];
   
@@ -358,9 +359,10 @@ app.get("/AddModerator", async (req, res) => {
 
   try{
     // input new user with perk
-    WriteFile(username + ":" + perk, "", true, 'Perks_' + worldName);
+    WriteFile(username + ":" + perk + "\n", "", true, fileName + worldName);
     // success
     var perkAddSuccess =  "Sucessfully added user " +  username + " with perk " + perk;
+    console.log(perkAddSuccess);
     res.end(perkAddSuccess);
   }
   catch(error)
@@ -368,6 +370,35 @@ app.get("/AddModerator", async (req, res) => {
     var perkAddFail =  "Failed to add user " +  username + " with perk " + perk + ": " + error.message;
     console.log(perkAddFail);
     res.end(perkAddFail);
+  }
+});
+
+app.get("/DeleteModerator", async (req, res) => {
+  const { DeleteLineFromFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const worldName = req.query.w || "All";
+  const username = req.query.username;
+  const perk = req.query.perk;
+  const authKey = process.env['DEV_API_KEY'];
+  const fileName = "Perks_";
+  
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  try{
+    // input new user with perk
+    DeleteLineFromFile(fileName + worldName, username);
+    var perkRemoveSuccess =  "Sucessfully removed user " +  username + " with perk " + perk;
+    console.log(perkRemoveSuccess);
+    res.end(perkRemoveSuccess);
+  }
+  catch(error)
+  {
+    var perkRemoveFail =  "Failed to remove user " +  username + " with perk " + perk + ": " + error.message;
+    console.log(perkRemoveFail);
+    res.end(perkRemoveFail);
   }
 });
 
