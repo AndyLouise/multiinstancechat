@@ -309,6 +309,17 @@ app.get("/AddBlacklistWord", async (req, res) => {
     return;
   }
 
+  // removes word if it already exists
+  try{
+    // delete line
+    DeleteLineFromFile(fileName, word);
+    console.log(word + " already existed on blacklist, removing duplicate");
+  }
+  catch(error)
+  {
+    console.log("Failed to remove blacklist word: " + error);
+  }
+
   // set new slur word
   try{
     var fileWord = word + "\n";
@@ -328,7 +339,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
   const word = req.query.word || null;
-  const file = "Slurs";
+  const fileName = "Slurs";
 
   // DEV KEY
   if (auth !== authKey) {
@@ -344,7 +355,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
 
   try{
     // delete line
-    DeleteLineFromFile(file, word);
+    DeleteLineFromFile(fileName, word);
     console.log(word + " removed from blacklist");
     res.end(word + " removed from blacklist");
   }
