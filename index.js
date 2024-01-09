@@ -207,7 +207,7 @@ app.get("/Data/:filename", (req, res) => {
       return;
   }
   // Construct the full path to the requested file
-  const filePath = path.resolve(__dirname, dataDirectory, filename);
+  const filePath = path.resolve(__dirname, directoryPath, filename);
 
   // Check if the requested path is a file
   try {
