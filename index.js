@@ -195,6 +195,7 @@ app.get("/Data", async (req, res) => {
 });
 
 app.get("/Data/:filename", (req, res) => {
+  const fs = require('fs');
   const auth = req.query.auth || null;
   const filename = req.params.filename || '';
   const authKey = process.env['MASTER_KEY'];
@@ -204,7 +205,7 @@ app.get("/Data/:filename", (req, res) => {
       res.status(403).send("Access Forbidden: Invalid authentication key");
       return;
   }
-
+  
   // Check if the requested path is a file
   try {
     const stats = fs.statSync(directoryPath + filename);
@@ -217,7 +218,7 @@ app.get("/Data/:filename", (req, res) => {
     }
   } catch (error) {
     console.log("Error: " + error);
-    res.status(404).send("Not Found: File does not exist");
+    res.status(404).send("Error: " + error);
   }
 });
 
