@@ -166,6 +166,26 @@ app.get("/help", async (req, res) => {
   return;
 });
 
+app.get("/Data", async (req, res) => {
+  const auth = req.query.auth || null;
+  const authKey = process.env['MASTER_KEY'];
+
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+  // Read the contents of the directory
+  const fileNames = fs.readdirSync(directoryPath);
+
+  // Generate an HTML list of files
+  const fileList = fileNames.map(fileName => `<li><a href="/files/${fileName}">${fileName}</a></li>`).join('');
+
+  // Send the HTML response
+  res.send(`<ul>${fileList}</ul>`);
+  
+  return;
+});
+
 app.get("/getChat", async (req, res) => {
   const { ReadFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
@@ -389,7 +409,7 @@ app.get("/DeleteModerator", async (req, res) => {
 
   try{
     // input new user with perk
-    DeleteLineFromFile(fileName + worldName, username);
+    DeleteLineFromFile(fileName + worldName, username + ":" + perk);
     var perkRemoveSuccess =  "Sucessfully removed user " +  username + " with perk " + perk;
     console.log(perkRemoveSuccess);
     res.end(perkRemoveSuccess);
