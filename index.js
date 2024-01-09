@@ -167,6 +167,7 @@ app.get("/help", async (req, res) => {
 });
 
 app.get("/Data", async (req, res) => {
+  const fs = require('fs');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
   const directoryPath = "/Data";
