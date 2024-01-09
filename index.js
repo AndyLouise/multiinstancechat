@@ -169,16 +169,18 @@ app.get("/help", async (req, res) => {
 app.get("/Data", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
+  const directoryPath = "/Data";
 
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
     return;
   }
+
   // Read the contents of the directory
   const fileNames = fs.readdirSync(directoryPath);
 
   // Generate an HTML list of files
-  const fileList = fileNames.map(fileName => `<li><a href="/files/${fileName}">${fileName}</a></li>`).join('');
+  const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}">${fileName}</a></li>`).join('');
 
   // Send the HTML response
   res.send(`<ul>${fileList}</ul>`);
