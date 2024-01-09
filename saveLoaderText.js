@@ -1,9 +1,6 @@
 const fs = require('fs');
 
 function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="Data"){
-  // make sure to delete any spaces in the file name
-  fileName = fileName.replace(/\s/g, '');
-  id = id.replace(/\s/g, '');
   if(append) {
     // Write the string to a file
     fs.appendFile(`${folder}/${fileName}${id}.txt`, prompt, function(err) {
@@ -26,8 +23,6 @@ function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="D
 }
 
 function DeleteLineFromFile(filePath, searchString, folder='Data') {
-  // make sure to delete any spaces in the file name
-  filePath = filePath.replace(/\s/g, '');
   // Read the file
   fs.readFile(`${folder}/${filePath}.txt`, 'utf8', (err, data) => {
       if (err) {
@@ -64,9 +59,6 @@ function DeleteLineFromFile(filePath, searchString, folder='Data') {
 
 
 function ReadFile(id, fileName='promptHistory', folder='Data')  {
-  // make sure to delete any spaces in the file name
-  fileName = fileName.replace(/\s/g, '');
-  id = id.replace(/\s/g, '');
   let data;
   try {
     data = fs.readFile(`${folder}/${fileName}${id}.txt`, 'utf-8');
