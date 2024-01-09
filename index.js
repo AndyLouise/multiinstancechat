@@ -291,10 +291,10 @@ app.get("/LogChatAndCreateFile", async (req, res) => {
 });
 
 app.get("/AddBlacklistWord", async (req, res) => {
-  const { WriteFile } = require('./saveLoaderText.js');
+  const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
-  const fileName = "Slurs";
+  const file = "Data/Slurs.txt";
   const word = req.query.word || null;
   
   // DEV KEY
@@ -312,7 +312,7 @@ app.get("/AddBlacklistWord", async (req, res) => {
   // removes word if it already exists
   try{
     // delete line
-    DeleteLineFromFile(fileName, word);
+    DeleteLineFromFile(file, word);
     console.log(word + " already existed on blacklist, removing duplicate");
   }
   catch(error)
@@ -339,7 +339,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
   const word = req.query.word || null;
-  const fileName = "Slurs";
+  const file = "Data/Slurs.txt";
 
   // DEV KEY
   if (auth !== authKey) {
@@ -355,7 +355,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
 
   try{
     // delete line
-    DeleteLineFromFile(fileName, word);
+    DeleteLineFromFile(file, word);
     console.log(word + " removed from blacklist");
     res.end(word + " removed from blacklist");
   }
@@ -451,7 +451,7 @@ app.get("/DeleteModerator", async (req, res) => {
   const username = req.query.username;
   const perk = req.query.perk;
   const authKey = process.env['DEV_API_KEY'];
-  const fileName = "Perks_";
+  const file = "Data/Perks_" + worldName + ".txt";
   
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -460,7 +460,7 @@ app.get("/DeleteModerator", async (req, res) => {
 
   try{
     // input new user with perk
-    DeleteLineFromFile(fileName + worldName, username + ":" + perk);
+    DeleteLineFromFile(file, username);
     var perkRemoveSuccess =  "Sucessfully removed user " +  username + " with perk " + perk;
     console.log(perkRemoveSuccess);
     res.end(perkRemoveSuccess);

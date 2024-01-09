@@ -22,9 +22,9 @@ function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="D
   }
 }
 
-function DeleteLineFromFile(filePath, searchString, folder='Data') {
+function DeleteLineFromFile(filePath, searchString) {
   // Read the file
-  fs.readFile(`${folder}/${filePath}.txt`, 'utf8', (err, data) => {
+  fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
           console.log('Error reading file:', err);
           return;
