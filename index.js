@@ -169,7 +169,6 @@ app.get("/help", async (req, res) => {
 app.get("/Data", async (req, res) => {
   const fs = require('fs');
   const auth = req.query.auth || null;
-  const filename = req.params.filename || '';
   const authKey = process.env['MASTER_KEY'];
   const directoryPath = "Data/";
 
@@ -183,7 +182,7 @@ app.get("/Data", async (req, res) => {
     const fileNames = fs.readdirSync(directoryPath);
 
     // Generate an HTML list of files
-    const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}">${fileName}</a></li>`).join('');
+    const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
 
     // Send the HTML response
     res.send(`<ul>${fileList}</ul>`);
@@ -206,12 +205,9 @@ app.get("/Data/:filename", (req, res) => {
       return;
   }
 
-  // Construct the full path to the requested file
-  const filePath = path.join(directoryPath, filename);
-
   // Check if the requested path is a file
   try {
-    const stats = fs.statSync(filePath);
+    const stats = fs.statSync(directoryPath + filename);
 
     if (stats.isFile()) {
         // If it's a file, send the file as a response
