@@ -310,17 +310,6 @@ app.get("/AddBlacklistWord", async (req, res) => {
     return;
   }
 
-  // removes word if it already exists
-  try{
-    // delete line
-    DeleteLineFromFile(file, word);
-    console.log(word + " already existed on blacklist, removing duplicate");
-  }
-  catch(error)
-  {
-    console.log("Failed to remove blacklist word: " + error);
-  }
-
   // set new slur word
   try{
     var fileWord = word + "\n";
@@ -579,7 +568,7 @@ app.get("/setUsers", async (req, res) => {
 });
 
 app.get("/chat", async (req, res) => {
-  const { WriteFile, ReadFile, CreateFile, DeleteFile } = require('./saveLoaderText.js');
+  const { WriteFile, ReadFile, CreateFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const pass = process.env['pass'];
   const authKey = process.env['AUTH_KEY'];
@@ -712,7 +701,25 @@ app.get("/chat", async (req, res) => {
         } 
         catch (error)
         {
-          console.log("failed to ban User: " + bannedUserName);
+          console.log("failed to ban User: " + bannedUserName + ": " + error.message);
+        }
+      }
+      // unban
+      if (msg.includes('/unban')) {
+        // Remove "/ban" and any spaces from the message
+        const unbannedUserName = msg.replace(/\/unban\s+/g, '');
+        const userUnbannedString = unbannedUserName.toLowerCase() + "\n";
+
+        try{
+          // remove the user from the list
+          DeleteLineFromFile("Data/" + fileNameBannedUsers + ".txt", userUnbannedString);
+          console.log("unbanned user: " + unbannedUserName);
+          msg = "<color=red>(System) User " + unbannedUserName + " Was Unbanned By "+ name +"</color>";
+          name = "";
+        } 
+        catch (error)
+        {
+          console.log("failed to unban User: " + unbannedUserName + ": " + error.message);
         }
       }
       
