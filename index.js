@@ -295,6 +295,7 @@ app.get("/AddBlacklistWord", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
   const file = "Data/Slurs.txt";
+  const fileName = "Slurs";
   const word = req.query.word || null;
   
   // DEV KEY
