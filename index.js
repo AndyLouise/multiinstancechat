@@ -6,6 +6,7 @@ const express = require("express");
 const nocache = require("nocache");
 const app = express();
 const axios = require('axios');
+const volumePath = process.env['RAILWAY_VOLUME_MOUNT_PATH'];
 
 // Config
 
@@ -23,6 +24,7 @@ console.log(`| PORT: ${config.port}`);
 console.log(`| FORMAT: ${config.dataFormat}`);
 console.log(`| KEEP ARTIFACTS: ${config.keepArtifacts}`);
 console.log("--------------------------------");
+console.log(`${volumePath}`);
 
 // Init
 app.use(cors());
@@ -167,6 +169,34 @@ app.get("/help", async (req, res) => {
 });
 
 app.get("/Data", async (req, res) => {
+  const fs = require('fs');
+  const auth = req.query.auth || null;
+  const authKey = process.env['MASTER_KEY'];
+  const directoryPath = "Data/";
+
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  try{
+    // Read the contents of the directory
+    const fileNames = fs.readdirSync(directoryPath);
+
+    // Generate an HTML list of files
+    const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
+
+    // Send the HTML response
+    res.send(`<ul>${fileList}</ul>`);
+
+  } catch (error) {
+    console.log("Error: " + error);
+    res.status(503).send("Error: " + error);
+  }
+
+});
+
+app.get(`/${volumePath}`, async (req, res) => {
   const fs = require('fs');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
