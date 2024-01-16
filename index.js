@@ -137,7 +137,8 @@ function ClearLines(messages, linesToRemove)
 }
 
 async function sendOccupantsCount(numberOfOccupants) {
-  const url = 'https://delayed-api.andorelouise.repl.co/enqueue?n=' + numberOfOccupants;
+  var delayedAPIKey = process.env['MASTER_KEY'];
+  const url = `https://multiinstancechat-delayedapi-production.up.railway.app/enqueue?auth=${delayedAPIKey}&n=` + numberOfOccupants;
   
   try {
     const response = await axios.get(url);
