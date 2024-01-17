@@ -82,5 +82,31 @@
 
     <button type="submit">Upload</button>
   </form>
+  <script>
+    document.querySelector('form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const fileInput = document.getElementById('file');
+      const authKeyInput = document.getElementById('authKey');
+  
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('authKey', authKeyInput.value);
+  
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Authorization': authKeyInput.value,
+          },
+        });
+  
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+  </script>
 </body>
 </html>
