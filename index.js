@@ -4,11 +4,34 @@ require("dotenv").config({ path: require("find-config")(".env") });
 const cors = require("cors");
 const express = require("express");
 const nocache = require("nocache");
+const multer = require('multer');
 const app = express();
 const axios = require('axios');
 const volumePath = process.env['RAILWAY_VOLUME_MOUNT_PATH'];
 
 // Config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, volumePath + "/"); // Specify the destination directory
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname); // Use the original file name
+  },
+});
+
+// Middleware to check the authentication key
+const authenticate = (req, res, next) => {
+  const providedKey = req.headers['authorization'];
+  const masterKey = process.env.MASTER_KEY;
+
+  if (providedKey === masterKey) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+const upload = multer({ storage: storage });
 
 let config = {
   dataFormat: process.env.DATA_FORMAT || "json",
@@ -155,6 +178,15 @@ async function sendOccupantsCount(numberOfOccupants) {
 
 // Routing
 
+//// POST \\\\
+
+// Handle file upload
+app.post('/upload', authenticate, upload.single('file'), (req, res) => {
+  res.send('File uploaded successfully!');
+});
+
+//// GET \\\\
+
 app.get("/", async (req, res) => {
   res.end("Welcome to Multi-Instance Chat: access https://multiinstancechat-production.up.railway.app/help for more details");
   return;
@@ -167,6 +199,19 @@ app.get("/help", async (req, res) => {
   API Documentation: https://github.com/AndyLouise/multiinstancechat/blob/main/README.md\n
   For any issues please contact me on Twitter: @andyplouise`);
   return;
+});
+
+// Serve HTML form for file upload
+app.get('/Uploader', (req, res) => {
+
+  const authKey = process.env['MASTER_KEY'];
+  // auth
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  res.sendFile(path.join(__dirname, 'uploader.html'));
 });
 
 app.get("/Data", async (req, res) => {
@@ -186,34 +231,6 @@ app.get("/Data", async (req, res) => {
 
     // Generate an HTML list of files
     const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
-
-    // Send the HTML response
-    res.send(`<ul>${fileList}</ul>`);
-
-  } catch (error) {
-    console.log("Error: " + error);
-    res.status(503).send("Error: " + error);
-  }
-
-});
-
-app.get(`${volumePath}`, async (req, res) => {
-  const fs = require('fs');
-  const auth = req.query.auth || null;
-  const authKey = process.env['MASTER_KEY'];
-  const directoryPath = volumePath;
-
-  if (auth !== authKey) {
-    res.status(403).send("Access Forbidden: Invalid authentication key");
-    return;
-  }
-
-  try{
-    // Read the contents of the directory
-    const fileNames = fs.readdirSync(directoryPath);
-
-    // Generate an HTML list of files
-    const fileList = fileNames.map(fileName => `<li><a href="${directoryPath}/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
 
     // Send the HTML response
     res.send(`<ul>${fileList}</ul>`);
