@@ -19,18 +19,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// Middleware to check the authentication key
-const authenticate = (req, res, next) => {
-  const providedKey = req.headers['authorization'];
-  const masterKey = process.env['MASTER_KEY'];
-
-  if (providedKey == masterKey) {
-    next();
-  } else {
-    res.status(401).json({ error: 'Unauthorized' });
-  }
-};
-
 const upload = multer({ storage: storage });
 
 let config = {
@@ -180,7 +168,20 @@ async function sendOccupantsCount(numberOfOccupants) {
 //// POST \\\\
 
 // Handle file upload
-app.post('/upload', authenticate, upload.single('file'), (req, res) => {  
+app.post('/upload', upload.single('file'), (req, res) => {  
+
+  const providedKey = req.headers['authorization'];
+  const masterKey = process.env['MASTER_KEY'];
+
+  console.log('Request to upload file: ');
+  console.log('Provided Key:', providedKey);
+  console.log('Master Key:', masterKey);
+
+  if (providedKey !== masterKey) {
+    console.log('Unauthorized');
+    res.status(401).json({ error: 'Unauthorized' });
+  } 
+
   res.send('File uploaded successfully!');
 });
 
@@ -244,7 +245,7 @@ app.get("/Data", async (req, res) => {
 
 });
 
-app.get("/Data/:filename", (req, res) => {
+app.get("/Data/:filename", async (req, res) => {
   const fs = require('fs');
   const path = require('path');
   const auth = req.query.auth || null;
