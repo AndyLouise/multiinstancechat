@@ -202,7 +202,8 @@ app.get("/help", async (req, res) => {
 
 // Serve HTML form for file upload
 app.get('/Uploader', (req, res) => {
-
+  const path = require('path');
+  
   const auth = req.query.auth || null;
 
   const authKey = process.env['MASTER_KEY'];
