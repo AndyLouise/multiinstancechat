@@ -70,6 +70,25 @@
       transition: background-color 0.3s, transform 0.3s;
     }
 
+    #message {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    #success {
+      background-color: #2ecc71;
+      color: #fff;
+    }
+
+    #error {
+      background-color: #e74c3c;
+      color: #fff;
+    }
+
   </style>
 </head>
 <body>
@@ -81,12 +100,15 @@
     <input type="text" name="authKey" id="authKey" />
 
     <button type="submit">Upload</button>
+
+    <div id="message"></div>
   </form>
   <script>
     document.querySelector('form').addEventListener('submit', async (event) => {
       event.preventDefault();
       const fileInput = document.getElementById('file');
       const authKeyInput = document.getElementById('authKey');
+      const messageDiv = document.getElementById('message');
   
       const formData = new FormData();
       formData.append('file', fileInput.files[0]);
@@ -100,11 +122,19 @@
             'Authorization': authKeyInput.value,
           },
         });
-  
-        const result = await response.json();
-        console.log(result);
+
+        if (response.ok) {
+          messageDiv.textContent = 'File uploaded successfully!';
+          messageDiv.className = 'success';
+        } else {
+          const data = await response.json();
+          messageDiv.textContent = `Error: ${data.error}`;
+          messageDiv.className = 'error';
+        }
       } catch (error) {
         console.error('Error:', error);
+        messageDiv.textContent = 'An unexpected error occurred.';
+        messageDiv.className = 'error';
       }
     });
   </script>
