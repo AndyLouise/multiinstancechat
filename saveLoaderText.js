@@ -1,6 +1,7 @@
 const fs = require('fs');
+const defaultFolder = process.env['RAILWAY_VOLUME_MOUNT_PATH'] + "/MIC_Data";
 
-function WriteFile(prompt, id, append=false, fileName="promptHistory", folder="Data"){
+function WriteFile(prompt, id, append=false, fileName="promptHistory", folder=defaultFolder){
   if(append) {
     // Write the string to a file
     fs.appendFile(`${folder}/${fileName}${id}.txt`, prompt, function(err) {
@@ -58,7 +59,7 @@ function DeleteLineFromFile(filePath, searchString) {
 }
 
 
-function ReadFile(id, fileName='promptHistory', folder='Data')  {
+function ReadFile(id, fileName='promptHistory', folder=defaultFolder)  {
   let data;
   try {
     data = fs.readFileSync(`${folder}/${fileName}${id}.txt`, 'utf-8');
@@ -69,7 +70,7 @@ function ReadFile(id, fileName='promptHistory', folder='Data')  {
 }
 
 module.exports = { 
-  DeleteFile: (id, fileName='promptHistory', folder='Data') => {
+  DeleteFile: (id, fileName='promptHistory', folder=defaultFolder) => {
     fs.unlink(`${folder}/${fileName}${id}.txt`, (err) => {
       if (err) {
         return;
@@ -79,7 +80,7 @@ module.exports = {
   },
   ReadFile,
   DeleteLineFromFile,
-  CreateFile: (id, fileName='promptHistory', folder='Data', initialText='') => {
+  CreateFile: (id, fileName='promptHistory', folder=defaultFolder, initialText='') => {
     console.log('Creating new file: ' + fileName + id);
     WriteFile(initialText, id, false, fileName, folder);
   },

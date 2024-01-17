@@ -7,12 +7,12 @@ const nocache = require("nocache");
 const multer = require('multer');
 const app = express();
 const axios = require('axios');
-const volumePath = process.env['RAILWAY_VOLUME_MOUNT_PATH'];
+const volumePath = process.env['RAILWAY_VOLUME_MOUNT_PATH'] + "/MIC_Data/";
 
 // Config for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, volumePath + "/"); // Specify the destination directory
+    cb(null, volumePath); // Specify the destination directory
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname); // Use the original file name
@@ -173,15 +173,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
   const providedKey = req.headers['authorization'];
   const masterKey = process.env['MASTER_KEY'];
 
-  console.log('Request to upload file: ');
-  console.log('Provided Key:', providedKey);
-  console.log('Master Key:', masterKey);
-
   if (providedKey !== masterKey) {
     console.log('Unauthorized');
     res.status(401).json({ error: 'Unauthorized' });
   } 
 
+  // Access the file information from req.file
+  const fileName = req.file ? req.file.originalname : 'unknown';
+  console.log(`Request to upload File: ${fileName}`);
   res.send('File uploaded successfully!');
 });
 
@@ -221,7 +220,7 @@ app.get("/Data", async (req, res) => {
   const fs = require('fs');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = volumePath + "/";
+  const directoryPath = volumePath;
 
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -229,11 +228,18 @@ app.get("/Data", async (req, res) => {
   }
 
   try{
+    // Create a folder for data if it doesn't exist
+    const uploadsFolder = path.join(defaultFolder, 'MIC_Data');
+    if (!fs.existsSync(uploadsFolder)) {
+      fs.mkdirSync(uploadsFolder);
+      console.log('MIC_Data folder created');
+    }
+
     // Read the contents of the directory
     const fileNames = fs.readdirSync(directoryPath);
 
     // Generate an HTML list of files
-    const fileList = fileNames.map(fileName => `<li><a href="${volumePath}/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
+    const fileList = fileNames.map(fileName => `<li><a href="${volumePath}${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
 
     // Send the HTML response
     res.send(`<ul>${fileList}</ul>`);
@@ -251,7 +257,7 @@ app.get("/Data/:filename", async (req, res) => {
   const auth = req.query.auth || null;
   const filename = req.params.filename || '';
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = volumePath + "/";
+  const directoryPath = volumePath;
 
   if (auth !== authKey) {
       res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -345,7 +351,6 @@ app.get("/AddBlacklistWord", async (req, res) => {
   const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
-  const file = "Data/Slurs.txt";
   const fileName = "Slurs";
   const word = req.query.word || null;
   
@@ -380,7 +385,7 @@ app.get("/DeleteWordBlacklist", async (req, res) => {
   const auth = req.query.auth || null;
   const authKey = process.env['DEV_API_KEY'];
   const word = req.query.word || null;
-  const file = "Data/Slurs.txt";
+  const file = volumePath + "Slurs.txt";
 
   // DEV KEY
   if (auth !== authKey) {
@@ -492,7 +497,7 @@ app.get("/DeleteModerator", async (req, res) => {
   const username = req.query.username;
   const perk = req.query.perk;
   const authKey = process.env['DEV_API_KEY'];
-  const file = "Data/Perks_" + worldName + ".txt";
+  const file = volumePath + "Perks_" + worldName + ".txt";
   
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -763,7 +768,7 @@ app.get("/chat", async (req, res) => {
 
         try{
           // remove the user from the list
-          DeleteLineFromFile("Data/" + fileNameBannedUsers + ".txt", userUnbannedString);
+          DeleteLineFromFile( volumePath + fileNameBannedUsers + ".txt", userUnbannedString);
           console.log("unbanned user: " + unbannedUserName);
           msg = "<color=red>(System) User " + unbannedUserName + " Was Unbanned By "+ name +"</color>";
           name = "";
