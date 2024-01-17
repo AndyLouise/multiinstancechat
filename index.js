@@ -218,9 +218,9 @@ app.get('/Uploader', (req, res) => {
 
 app.get("/Data", async (req, res) => {
   const fs = require('fs');
+  const path = require('path');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = volumePath;
 
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -229,14 +229,14 @@ app.get("/Data", async (req, res) => {
 
   try{
     // Create a folder for data if it doesn't exist
-    const uploadsFolder = path.join(defaultFolder, 'MIC_Data');
+    const uploadsFolder = path.join(process.env['RAILWAY_VOLUME_MOUNT_PATH'], 'MIC_Data');
     if (!fs.existsSync(uploadsFolder)) {
       fs.mkdirSync(uploadsFolder);
       console.log('MIC_Data folder created');
     }
 
     // Read the contents of the directory
-    const fileNames = fs.readdirSync(directoryPath);
+    const fileNames = fs.readdirSync(volumePath);
 
     // Generate an HTML list of files
     const fileList = fileNames.map(fileName => `<li><a href="${volumePath}${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
@@ -257,14 +257,13 @@ app.get("/Data/:filename", async (req, res) => {
   const auth = req.query.auth || null;
   const filename = req.params.filename || '';
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = volumePath;
 
   if (auth !== authKey) {
       res.status(403).send("Access Forbidden: Invalid authentication key");
       return;
   }
   // Construct the full path to the requested file
-  const filePath = path.resolve(__dirname, directoryPath, filename);
+  const filePath = path.join(volumePath, filename);
 
   // Check if the requested path is a file
   try {
