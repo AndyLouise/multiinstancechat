@@ -216,7 +216,7 @@ app.get('/Uploader', (req, res) => {
   res.sendFile(path.join(__dirname, 'uploader.html'));
 });
 
-app.get("/Data", async (req, res) => {
+app.get("/Data/MIC_Data", async (req, res) => {
   const fs = require('fs');
   const path = require('path');
   const auth = req.query.auth || null;
@@ -251,7 +251,7 @@ app.get("/Data", async (req, res) => {
 
 });
 
-app.get("/Data/:filename", async (req, res) => {
+app.get("/Data/MIC_Data/:filename", async (req, res) => {
   const fs = require('fs');
   const path = require('path');
   const auth = req.query.auth || null;
