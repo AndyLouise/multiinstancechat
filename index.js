@@ -24,7 +24,7 @@ const authenticate = (req, res, next) => {
   const providedKey = req.headers['authorization'];
   const masterKey = process.env['MASTER_KEY'];
 
-  if (providedKey === masterKey) {
+  if (providedKey == masterKey) {
     next();
   } else {
     res.status(401).json({ error: 'Unauthorized' });
