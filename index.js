@@ -197,11 +197,11 @@ app.get("/Data", async (req, res) => {
 
 });
 
-app.get(`/${volumePath}`, async (req, res) => {
+app.get(`${volumePath}`, async (req, res) => {
   const fs = require('fs');
   const auth = req.query.auth || null;
   const authKey = process.env['MASTER_KEY'];
-  const directoryPath = "Data/";
+  const directoryPath = volumePath;
 
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
@@ -213,7 +213,7 @@ app.get(`/${volumePath}`, async (req, res) => {
     const fileNames = fs.readdirSync(directoryPath);
 
     // Generate an HTML list of files
-    const fileList = fileNames.map(fileName => `<li><a href="/Data/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
+    const fileList = fileNames.map(fileName => `<li><a href="${directoryPath}/${fileName}?auth=${auth}">${fileName}</a></li>`).join('');
 
     // Send the HTML response
     res.send(`<ul>${fileList}</ul>`);
