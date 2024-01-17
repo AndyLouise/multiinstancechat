@@ -9,7 +9,7 @@ const app = express();
 const axios = require('axios');
 const volumePath = process.env['RAILWAY_VOLUME_MOUNT_PATH'];
 
-// Config
+// Config for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, volumePath + "/"); // Specify the destination directory
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 // Middleware to check the authentication key
 const authenticate = (req, res, next) => {
   const providedKey = req.headers['authorization'];
-  const masterKey = process.env.MASTER_KEY;
+  const masterKey = process.env['MASTER_KEY'];
 
   if (providedKey === masterKey) {
     next();
@@ -180,7 +180,7 @@ async function sendOccupantsCount(numberOfOccupants) {
 //// POST \\\\
 
 // Handle file upload
-app.post('/upload', authenticate, upload.single('file'), (req, res) => {
+app.post('/upload', authenticate, upload.single('file'), (req, res) => {  
   res.send('File uploaded successfully!');
 });
 
@@ -203,7 +203,7 @@ app.get("/help", async (req, res) => {
 // Serve HTML form for file upload
 app.get('/Uploader', (req, res) => {
   const path = require('path');
-  
+
   const auth = req.query.auth || null;
 
   const authKey = process.env['MASTER_KEY'];
