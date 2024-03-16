@@ -626,6 +626,7 @@ app.get("/chat", async (req, res) => {
   const { WriteFile, ReadFile, CreateFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
   const pass = process.env['pass'];
+  const systemPass = process.env['systemPass'];
   const authKey = process.env['AUTH_KEY'];
   const worldName = req.query.w || "All";
   const fileIDName = process.env['FileID'] + "_" + worldName;
@@ -689,6 +690,9 @@ app.get("/chat", async (req, res) => {
     name =  "<color=yellow>(World Creator)" + name + "</color>";
     // world creators can ban
     userCanBan = true;
+  }
+  else if (urlPass == systemPass && name == "_") {
+    name =  "<color=blue>[System]</color>";
   }
   else if (name.toLowerCase().includes("andylouise") && (worldName == "All" || worldName == "SlenderManVR") ) {
     name =  "<color=red>(System) You don't have enough privilege for that</color>";
