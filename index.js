@@ -307,6 +307,35 @@ app.get("/getChat", async (req, res) => {
   }
 });
 
+app.get("/WriteToFile", async (req, res) => {
+  const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
+  const auth = req.query.auth || null;
+  const authKey = process.env['DEV_API_KEY'];
+  const file = req.query.f || null;
+  const text = req.query.t || null;
+  
+  // DEV KEY
+  if (auth !== authKey) {
+    res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  if(f == null || t == null){
+    console.log("Empty Input or Invalid File");
+    return;
+  }
+
+  // write to file
+  try{
+    WriteFile(text, "", false, file);
+    res.end(text);
+  } 
+  catch (error)
+  {
+    res.end("Failed to write to file: " + error);
+  }
+});
+
 app.get("/LogChatAndCreateFile", async (req, res) => {
   const { WriteFile, ReadFile, CreateFile, DeleteFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
