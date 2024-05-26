@@ -185,7 +185,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 });
 
 
-app.POST("/WriteToFile", async (req, res) => {
+app.post("/WriteToFile", async (req, res) => {
   const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const providedKey = req.headers['authorization'];
   const masterKey = process.env['MASTER_KEY'];
