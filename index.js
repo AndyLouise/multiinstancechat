@@ -189,27 +189,25 @@ app.post("/WriteToFile", async (req, res) => {
   const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const providedKey = req.headers['authorization'];
   const masterKey = process.env['MASTER_KEY'];
-  const file = req.f || null;
-  const text = req.t || null;
+  const { file, text } = req.body;
   
   if (providedKey !== masterKey) {
     console.log('Unauthorized');
     res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if(file == null || text == null){
+  if (!file || !text) {
     console.log("Empty Input or Invalid File");
-    return;
+    return res.status(400).json({ error: "Empty Input or Invalid File" });
   }
 
-  // write to file
-  try{
-    WriteFile(text, "", false, file);
-    res.end(text);
-  } 
-  catch (error)
-  {
-    res.end("Failed to write to file: " + error);
+  // Write to file
+  try {
+    await WriteFile(text, "", false, file);
+    res.json({ message: "File written successfully", content: text });
+  } catch (error) {
+    console.log("Failed to write to file:", error);
+    res.status(500).json({ error: "Failed to write to file", details: error.message });
   }
 });
 
