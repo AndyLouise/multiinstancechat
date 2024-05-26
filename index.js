@@ -196,7 +196,10 @@ app.post("/WriteToFile", async (req, res) => {
     console.log('Unauthorized');
     res.status(401).json({ error: 'Unauthorized' });
   }
-
+  console.log(req.body);
+  console.log(req.body.file);
+  console.log(req.body.text);
+  
   if (!file || !text) {
     console.log("Empty Input or Invalid File");
     return res.status(400).json({ error: "Empty Input or Invalid File" });
