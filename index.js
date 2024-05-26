@@ -189,7 +189,8 @@ app.post("/WriteToFile", async (req, res) => {
   const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const providedKey = req.headers['authorization'];
   const masterKey = process.env['MASTER_KEY'];
-  const { file, text } = req.body;
+  const file = req.body.file;
+  const text = req.body.text;
   
   if (providedKey !== masterKey) {
     console.log('Unauthorized');
