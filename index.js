@@ -184,6 +184,36 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.send('File uploaded successfully!');
 });
 
+
+app.POST("/WriteToFile", async (req, res) => {
+  const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
+  const providedKey = req.headers['authorization'];
+  const masterKey = process.env['MASTER_KEY'];
+  const file = req.f || null;
+  const text = req.t || null;
+  
+  if (providedKey !== masterKey) {
+    console.log('Unauthorized');
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if(file == null || text == null){
+    console.log("Empty Input or Invalid File");
+    return;
+  }
+
+  // write to file
+  try{
+    WriteFile(text, "", false, file);
+    res.end(text);
+  } 
+  catch (error)
+  {
+    res.end("Failed to write to file: " + error);
+  }
+});
+
+
 //// GET \\\\
 
 app.get("/", async (req, res) => {
@@ -304,35 +334,6 @@ app.get("/getChat", async (req, res) => {
   {
     console.log("Failed to get chat: " +  error.message);
     res.end("Failed to get chat: " +  error.message);
-  }
-});
-
-app.get("/WriteToFile", async (req, res) => {
-  const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
-  const auth = req.query.auth || null;
-  const authKey = process.env['MASTER_KEY'];
-  const file = req.query.f || null;
-  const text = req.query.t || null;
-  
-  // DEV KEY
-  if (auth !== authKey) {
-    res.status(403).send("Access Forbidden: Invalid authentication key");
-    return;
-  }
-
-  if(f == null || t == null){
-    console.log("Empty Input or Invalid File");
-    return;
-  }
-
-  // write to file
-  try{
-    WriteFile(text, "", false, file);
-    res.end(text);
-  } 
-  catch (error)
-  {
-    res.end("Failed to write to file: " + error);
   }
 });
 
