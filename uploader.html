@@ -1,142 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Upload</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>File Upload</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			background-color: #333;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+		}
 
-    form {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-    }
+		form {
+			background-color: #424242;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			max-width: 400px;
+			width: 100%;
+			text-align: center;
+		}
 
-    h2 {
-      color: #333;
-    }
+		h2 {
+			color: #dedede;
+		}
 
-    input[type="file"],
-    input[type="text"],
-    button {
-      display: block;
-      margin: 10px auto;
-      padding: 10px;
-      width: 80%;
-      box-sizing: border-box;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      transition: background-color 0.3s, transform 0.3s;
-    }
+		label {
+			color: #dedede;
+		}
 
-    input[type="file"],
-    input[type="text"] {
-      background-color: #f9f9f9;
-    }
+		p {
+			color: #dedede;
+		}
 
-    input[type="file"]:hover,
-    input[type="text"]:hover,
-    button:hover {
-      background-color: #3498db;
-      color: #fff;
-      cursor: pointer;
-    }
 
-    input[type="file"]:active,
-    input[type="text"]:active,
-    button:active {
-      transform: scale(0.95);
-    }
+		input[type="file"],
+		input[type="text"],
+		button {
+			display: block;
+			margin: 10px auto;
+			padding: 10px;
+			width: 80%;
+			box-sizing: border-box;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			transition: background-color 0.3s, transform 0.3s;
+		}
 
-    button {
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.3s;
-    }
+		input[type="file"],
+		input[type="text"] {
+			background-color: #f9f9f9;
+		}
 
-    #message {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      width: 80%;
-      margin: 0 auto;
-    }
+			input[type="file"]:hover,
+			input[type="text"]:hover,
+			button:hover {
+				background-color: #3498db;
+				color: #fff;
+				cursor: pointer;
+			}
 
-    #success {
-      background-color: #2ecc71;
-      color: #fff;
-    }
+			input[type="file"]:active,
+			input[type="text"]:active,
+			button:active {
+				transform: scale(0.95);
+			}
 
-    #error {
-      background-color: #e74c3c;
-      color: #fff;
-    }
+		button {
+			background-color: #3498db;
+			color: #fff;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			transition: background-color 0.3s, transform 0.3s;
+		}
 
-  </style>
+		#message {
+			margin-top: 10px;
+			padding: 10px;
+			border-radius: 4px;
+			font-weight: bold;
+			width: 80%;
+			margin: 0 auto;
+		}
+
+		#success {
+			background-color: #2ecc71;
+			color: #fff;
+		}
+
+		#error {
+			background-color: #e74c3c;
+			color: #fff;
+		}
+	</style>
 </head>
 <body>
-  <form action="/upload" method="post" enctype="multipart/form-data">
-    <h2>File Upload</h2>
-    <input type="file" name="file" id="file" />
-    
-    <label for="authKey">Authentication Key</label>
-    <input type="text" name="authKey" id="authKey" />
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		<h2>File Upload</h2>
+		<input type="file" name="file" id="file" />
 
-    <button type="submit">Upload</button>
+		<h2>Write To File</h2>
+		<textarea id="textInput" name="textInput" cols="40" rows="5"></textarea>
+		<p for="fileName">File Name</p>
+		<input type="text" name="fileName" id="fileName" />
 
-    <div id="message"></div>
-  </form>
-  <script>
-    document.querySelector('form').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const fileInput = document.getElementById('file');
-      const authKeyInput = document.getElementById('authKey');
-      const messageDiv = document.getElementById('message');
-  
-      const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
-      formData.append('authKey', authKeyInput.value);
-  
-      try {
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Authorization': authKeyInput.value,
-          },
-        });
+		<label for="authKey">Authentication Key</label>
+		<input type="text" name="authKey" id="authKey" />
 
-        if (response.ok) {
-          messageDiv.textContent = 'File uploaded successfully!';
-          messageDiv.className = 'success';
-        } else {
-          const data = await response.json();
-          messageDiv.textContent = `Error: ${data.error}`;
-          messageDiv.className = 'error';
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        messageDiv.textContent = 'An unexpected error occurred.';
-        messageDiv.className = 'error';
-      }
-    });
-  </script>
+		<button type="submit">Upload</button>
+		<div id="message"></div>
+
+	</form>
+	<script>
+	document. querySelector('form').addEventListener('submit', async (event) => {
+	  event.preventDefault();
+	  const fileInput = document.getElementById('file');
+	  const authKeyInput = document.getElementById('authKey');
+	  const text = document.getElementById('textInput');
+	  const fileName = document.getElementById('fileName');
+	  const messageDiv = document.getElementById('message');
+
+	  if (text.value == null || text.value == "") {
+		  // no text input, so upload file
+			const formData = new FormData();
+			formData.append('file', fileInput.files[0]);
+			formData.append('authKey', authKeyInput.value);
+
+			try {
+				const response = await fetch('/upload', {
+					method: 'POST',
+					body: formData,
+					headers: {
+						'Authorization': authKeyInput.value,
+					},
+				});
+
+				if (response.ok) {
+					messageDiv.textContent = 'File uploaded successfully!';
+					messageDiv.className = 'success';
+				} else {
+					const data = await response.json();
+					messageDiv.textContent = `Error: ${data.error}`;
+					messageDiv.className = 'error';
+				}
+			} catch (error) {
+				console.error('Error:', error);
+				messageDiv.textContent = 'An unexpected error occurred.';
+				messageDiv.className = 'error';
+			}
+
+	  } else {
+		  // write to file
+          const formData = new FormData();
+          formData.append('t', text.value);
+          formData.append('f', fileName.value);
+          formData.append('authKey', authKeyInput.value);
+
+          try {
+              const response = await fetch('/WriteToFile', {
+                  method: 'POST',
+                  body: formData,
+                  headers: {
+                      'Authorization': authKeyInput.value,
+                  },
+              });
+
+              if (response.ok) {
+                  messageDiv.textContent = 'File updated successfully!';
+                  messageDiv.className = 'success';
+              } else {
+                  const data = await response.json();
+                  messageDiv.textContent = `Error: ${data.error}`;
+                  messageDiv.className = 'error';
+              }
+          } catch (error) {
+              console.error('Error:', error);
+              messageDiv.textContent = 'An unexpected error occurred.';
+              messageDiv.className = 'error';
+          }
+	  }
+
+	});
+	</script>
 </body>
 </html>
