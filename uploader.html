@@ -129,7 +129,6 @@
 		  // no text input, so upload file
 			const formData = new FormData();
 			formData.append('file', fileInput.files[0]);
-			formData.append('authKey', authKeyInput.value);
 
 			try {
 				const response = await fetch('/upload', {
@@ -157,10 +156,9 @@
 	  } else {
 		  // write to file
           const formData = new FormData();
-          formData.append('t', text.value);
-          formData.append('f', fileName.value);
-          formData.append('authKey', authKeyInput.value);
-
+	  formData.append('file', fileName.value);
+          formData.append('text', text.value);
+		  
           try {
               const response = await fetch('/WriteToFile', {
                   method: 'POST',
