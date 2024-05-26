@@ -310,7 +310,7 @@ app.get("/getChat", async (req, res) => {
 app.get("/WriteToFile", async (req, res) => {
   const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
   const auth = req.query.auth || null;
-  const authKey = process.env['DEV_API_KEY'];
+  const authKey = process.env['MASTER_KEY'];
   const file = req.query.f || null;
   const text = req.query.t || null;
   
