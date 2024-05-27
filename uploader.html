@@ -126,61 +126,60 @@
 	  const messageDiv = document.getElementById('message');
 
 	  if (text.value == null || text.value == "") {
-		  // no text input, so upload file
-			const formData = new FormData();
-			formData.append('file', fileInput.files[0]);
+		// no text input, so upload file
+		const formData = new FormData();
+		formData.append('file', fileInput.files[0]);
 
-			try {
-				const response = await fetch('/upload', {
-					method: 'POST',
-					body: formData,
-					headers: {
-						'Authorization': authKeyInput.value,
-					},
-				});
+		try {
+			const response = await fetch('/upload', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'Authorization': authKeyInput.value,
+				},
+			});
 
-				if (response.ok) {
-					messageDiv.textContent = 'File uploaded successfully!';
-					messageDiv.className = 'success';
-				} else {
-					const data = await response.json();
-					messageDiv.textContent = `Error: ${data.error}`;
-					messageDiv.className = 'error';
-				}
-			} catch (error) {
-				console.error('Error:', error);
-				messageDiv.textContent = 'An unexpected error occurred.';
+			if (response.ok) {
+				messageDiv.textContent = 'File uploaded successfully!';
+				messageDiv.className = 'success';
+			} else {
+				const data = await response.json();
+				messageDiv.textContent = `Error: ${data.error}`;
 				messageDiv.className = 'error';
 			}
+		} catch (error) {
+			console.error('Error:', error);
+			messageDiv.textContent = 'An unexpected error occurred.';
+			messageDiv.className = 'error';
+		}
 
 	  } else {
-		  // write to file
-          const formData = new FormData();
-	  formData.append('file', fileName.value);
-          formData.append('text', text.value);
-		  
-          try {
-              const response = await fetch('/WriteToFile', {
-                  method: 'POST',
-                  body: formData,
-                  headers: {
-                      'Authorization': authKeyInput.value,
-                  },
-              });
+		// write to file
+		const formDataWrite = new URLSearchParams();
+		formDataWrite.append('file', fileName.value);
+		formDataWrite.append('text', text.value);
+	  
+		try {
+			const response = await fetch(`/WriteToFile?${formDataWrite.toString()}`, {
+			method: 'GET',
+			headers: {
+				'Authorization': authKeyInput.value,
+			},
+		});
 
-              if (response.ok) {
-                  messageDiv.textContent = 'File updated successfully!';
-                  messageDiv.className = 'success';
-              } else {
-                  const data = await response.json();
-                  messageDiv.textContent = `Error: ${data.error}`;
-                  messageDiv.className = 'error';
-              }
-          } catch (error) {
-              console.error('Error:', error);
-              messageDiv.textContent = 'An unexpected error occurred.';
-              messageDiv.className = 'error';
-          }
+			if (response.ok) {
+			messageDiv.textContent = 'File updated successfully!';
+			messageDiv.className = 'success';
+			} else {
+			const data = await response.json();
+			messageDiv.textContent = `Error: ${data.error}`;
+			messageDiv.className = 'error';
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			messageDiv.textContent = 'An unexpected error occurred.';
+			messageDiv.className = 'error';
+		}
 	  }
 
 	});

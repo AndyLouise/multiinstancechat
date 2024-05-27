@@ -184,38 +184,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.send('File uploaded successfully!');
 });
 
-
-app.post("/WriteToFile", async (req, res) => {
-  const { WriteFile, DeleteLineFromFile } = require('./saveLoaderText.js');
-  const providedKey = req.headers['authorization'];
-  const masterKey = process.env['MASTER_KEY'];
-  const file = req.body.file;
-  const text = req.body.text;
-  
-  if (providedKey !== masterKey) {
-    console.log('Unauthorized');
-    res.status(401).json({ error: 'Unauthorized' });
-  }
-  console.log(req.body);
-  console.log(req.body.file);
-  console.log(req.body.text);
-  
-  if (!file || !text) {
-    console.log("Empty Input or Invalid File");
-    return res.status(400).json({ error: "Empty Input or Invalid File" });
-  }
-
-  // Write to file
-  try {
-    await WriteFile(text, "", false, file);
-    res.json({ message: "File written successfully", content: text });
-  } catch (error) {
-    console.log("Failed to write to file:", error);
-    res.status(500).json({ error: "Failed to write to file", details: error.message });
-  }
-});
-
-
 //// GET \\\\
 
 app.get("/", async (req, res) => {
@@ -310,6 +278,34 @@ app.get("/Data/MIC_Data/:filename", async (req, res) => {
   } catch (error) {
     console.log("Error: " + error);
     res.status(404).send("Error: " + error);
+  }
+});
+
+
+app.get("/WriteToFile", async (req, res) => {
+  const { WriteFile } = require('./saveLoaderText.js');
+  const providedKey = req.headers['authorization'];
+  const masterKey = process.env['MASTER_KEY'];
+  const file = req.query.file || null;
+  const text = req.query.text || null;
+  
+  if (providedKey !== masterKey) {
+    console.log('Unauthorized');
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if ( file == null || text == null) {
+    console.log("Empty Input or Invalid File");
+    return res.status(400).json({ error: "Empty Input or Invalid File" });
+  }
+
+  // Write to file
+  try {
+    await WriteFile(text, "", false, file);
+    res.json({ message: "File written successfully", content: text });
+  } catch (error) {
+    console.log("Failed to write to file:", error);
+    res.status(500).json({ error: "Failed to write to file", details: error.message });
   }
 });
 
