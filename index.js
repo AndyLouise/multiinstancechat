@@ -192,11 +192,11 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/help", async (req, res) => {
-  res.end(`Multi-Instance Chat was developed by AndyLouise to enable users in VRChat
+  res.end(`Multi-Instance Chat was developed by Lavryou to enable users in VRChat
   to chat between different instances and worlds.\n
   GitHub Project: https://github.com/AndyLouise/multiinstancechat\n
   API Documentation: https://github.com/AndyLouise/multiinstancechat/blob/main/README.md\n
-  For any issues please contact me on Twitter: @andyplouise`);
+  For any issues please contact me on Twitter: @lavryou`);
   return;
 });
 
