@@ -317,9 +317,22 @@ app.get("/getChat", async (req, res) => {
   const fileIDName = process.env['FileID'] + "_" + worldName;
   const fileName = "promptHistory_" + worldName;
   const authKey = process.env['AUTH_KEY'];
+
+  const bannedWorlds = [
+    "Cine De Dolli",
+    "Hitler",
+    "Nigga"
+  ];
   
   if (auth !== authKey) {
     res.status(403).send("Access Forbidden: Invalid authentication key");
+    return;
+  }
+
+  // Check for banned world names
+  if (bannedWorlds.some(name => worldName.includes(name))) {
+    const banMessage = `<color=blue>(System)</color>: <color=red>This Instance of Multi-Instance Chat Has Been Detected to be used/acquired illegally and it has been banned. We ask that user <color=red>elgatubin</color> Remove Multi-Instance Chat From Their World. For more information please contact the Owner using our website ----> https://lavryou.com/#contact`;
+    res.end(banMessage);
     return;
   }
   
