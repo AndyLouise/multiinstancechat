@@ -320,8 +320,11 @@ app.get("/getChat", async (req, res) => {
 
   const bannedWorlds = [
     "Cine De Dolli",
-    "Hitler",
-    "Nigga"
+    "Cine De Dolli 2",
+    "Cine De Dolli 3",
+    "Cine%20De%20Dolli",
+    "Cine%20De%20Dolli%202",
+    "Cine%20De%20Dolli%203"
   ];
   
   if (auth !== authKey) {
